@@ -24,7 +24,11 @@ public class MyConcurrentHashmap<K,V> {
 	//		Update the V value associated with a given K key.
 	// 		To update an object, first lock the particular map segment in which the key lies (hint: use getLockStrip())
 	public void put(K key, V val) {
-		return;
+		HashMap<K, V> map = this.getLockStrip(key);
+
+		synchronized(map){
+			map.put(key, val);
+		}
 	}
 	
 	// TODO: Implement get()
@@ -32,7 +36,18 @@ public class MyConcurrentHashmap<K,V> {
 	//		Return the Optional<V> value for a given K key. Any number of threads can execute get() at once.
 	//		If value is null, return Optional.empty();
 	public Optional<V> get(K key) {
-		return Optional.empty();
+		V val = null;
+		HashMap<K, V> map;
+
+		for (int i = 0; i < this.concurrencyCount; i++) {
+			map = ((HashMap<K, V>) this.maps[i]);
+			if (map.containsKey(key)) {
+				val = map.get(key);
+				break;
+			}
+		}
+
+		return Optional.ofNullable(val);
 	}
 	
 	// Returns lock strip associated with a given Key  

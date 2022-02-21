@@ -18,7 +18,14 @@ public class MyBoundedQueue<T> {
 	//		If there is space in the queue, add value to queue in FIFO order
 	//		Otherwise, block operation
 	public void put(T val) throws Exception {
-		return;
+		synchronized(this.instanceLock){
+			while (this.queue.size() >= this.capacity) {
+				this.instanceLock.wait();
+			}
+
+			this.queue.add(val);
+			this.instanceLock.notifyAll();
+		}
 	}
 	
 	// TODO: Implement take()
@@ -27,6 +34,14 @@ public class MyBoundedQueue<T> {
 	//			first value from queue in FIFO order
 	//		Otherwise, block operation
 	public T take() throws Exception {
-		return null;
+		synchronized(this.instanceLock){
+			while (this.queue.isEmpty()) {
+				this.instanceLock.wait();
+			}
+
+			T temp = this.queue.remove(0);
+			this.instanceLock.notifyAll();
+			return temp;
+		}
 	}
 }
